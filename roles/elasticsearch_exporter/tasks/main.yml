@@ -1,0 +1,49 @@
+---
+# tasks file for elasticsearch_exporter
+- name: Ensure directories exists
+  file:
+    path: "/tmp/elasticsearch_exporter"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: "0750"
+
+- name: download elasticsearch_exporter
+  get_url:
+    url: https://github.com/justwatchcom/elasticsearch_exporter/releases/download/v{{ elasticsearch_exporter_version }}/elasticsearch_exporter-{{ elasticsearch_exporter_version }}.linux-amd64.tar.gz
+    dest: "/tmp/elasticsearch_exporter"  
+    owner: elasticsearch
+    group: elasticsearch
+    mode: "0664"
+
+- name: unarchive file elasticsearch_exporter-{{ elasticsearch_exporter_version }}.linux-amd64.tar.gz
+  unarchive:
+    src: "/tmp/elasticsearch_exporter/elasticsearch_exporter-{{ elasticsearch_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/elasticsearch_exporter"  
+    owner: elasticsearch
+    group: elasticsearch
+    remote_src: yes
+
+- name: create elasticsearch_exporter.service in /etc/systemd/system/
+  template:
+    src: "{{ path_home }}/roles/elasticsearch_exporter/templates/elasticsearch_exporter.service.j2"
+    dest: "/etc/systemd/system/elasticsearch_exporter.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: enable and start service
+  systemd:
+    daemon_reload: yes
+    name: elasticsearch_exporter
+    state: started
+    enabled: yes
+
+- name: open port firewalld for elasticsearch_exporter
+  firewalld:
+    port: 9114/tcp
+    permanent: yes
+    state: enabled
+
+- name: restart firewalld
+  service: name=firewalld state=restarted

@@ -1,0 +1,23 @@
+---
+
+- name: install
+  hosts: wowza
+  remote_user: chunks4
+  become: true
+  
+  tasks:
+    - name: cai dat epel-release
+      yum:
+        name: epel-release
+        state: latest
+    - name: Tao /etc/yum.repos.d/nginx.repo
+      copy:
+        src: /home/thehung/ansible-galaxy/server-elasticsearch/nginx.repo
+        dest: /etc/yum.repos.d/nginx.repo
+        owner: root
+        group: root
+        mode: 0644
+    - name: install nginx
+      yum:
+        name: nginx
+        state: present

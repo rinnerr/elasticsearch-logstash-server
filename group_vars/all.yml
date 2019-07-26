@@ -1,0 +1,17 @@
+---
+#network
+bind_interface: "{{ ansible_default_ipv4.alias }}"
+bind_address:
+  "{{ hostvars[inventory_hostname]['ansible_' + bind_interface]['ipv4']['address'] }}"
+
+user_name: ansible
+path_home: /home/thehung/ansible-galaxy/elasticsearch-server
+path_home_server: /home/ansible
+path_to_packages: /home/thehung/ansible-galaxy/packages
+
+ip_public: "{{ bind_address}}"
+elasticsearch_server: "{{ bind_address }}"
+
+#elasticsearch_exporter
+elasticsearch_exporter_version: 1.1.0rc1
+elasticserach_exporter_dir: /tmp/elasticsearch_exporter/elasticsearch_exporter-{{ elasticsearch_exporter_version }}.linux-amd64

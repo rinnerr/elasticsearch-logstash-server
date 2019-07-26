@@ -1,0 +1,13 @@
+[Unit]
+Description=Elasticsearch Exporter
+
+[Service]
+User=elasticsearch
+Group=elasticsearch
+Restart=on-failure
+Type=simple
+ExecStart={{ elasticserach_exporter_dir }}/elasticsearch_exporter --es.uri=http://{{ ip_public }}:9200
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

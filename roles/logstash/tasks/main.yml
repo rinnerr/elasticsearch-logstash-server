@@ -1,0 +1,44 @@
+---
+- name: create file logstash.repo
+  template:
+    src: "{{ path_home }}/roles/logstash/templates/logstash.repo.j2"
+    dest: "/etc/yum.repos.d/logstash.repo"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: install logstash
+  yum:
+    name: logstash
+    state: present
+
+- name: edit logstash.yml
+  template:
+    src: "{{ path_home }}/roles/logstash/templates/logstash.yml.j2"
+    dest: "/etc/logstash/logstash.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: config logstash
+  template:
+    src: "{{ path_home }}/roles/logstash/templates/demo.conf.j2"
+    dest: "/etc/logstash/conf.d/demo.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    
+- name: start logstash
+  service:
+    name: logstash
+    state: started
+    enabled: yes
+
+- name: open port firewalld for logstash
+  firewalld:
+    port: 9600/tcp
+    permanent: yes
+    state: enabled
+    
+- name: restart firewalld
+  service: name=firewalld state=restarted

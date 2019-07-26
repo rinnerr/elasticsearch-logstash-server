@@ -1,0 +1,48 @@
+input {
+# here we'll define input from Filebeat, namely the host and port we're receiving beats from
+# remember that beats will actually be Wowza access log lines
+    beats {
+        # The IP address to listen for filebeat connections.
+        host => "localhost"
+	      port => 5044
+    }
+}
+filter {
+# here we'll define rules for processing of received wowza access log lines
+  grok{
+    match => {message => '(?<ftplogdate>%{DAY}+%{SPACE}%{MONTH} %{MONTHDAY} %{TIME} %{YEAR}) %{DATA:vsftpd_pid} \[%{DATA:camera_serial}\] %{WORD:vsftpd_action_status} %{WORD:vsftpd_action}: Client \"%{IP:vsftpd_client_ip}\"(, \"(?<vsftp_path>.*\/(?<daterecord>%{YEAR}-%{MONTHNUM}-%{MONTHDAY})\/.*\/.*\/(?<timerecord>(?:[+-]?(?:[0-9]))(?:[+-]?(?:[0-9]))(?:[+-]?(?:[0-9]))(?:[+-]?(?:[0-9]))(?:[+-]?(?:[0-9]))(?:[+-]?(?:[0-9]))).*.jpg)\",%{DATA:vsftpd_file_size}, %{DATA:vsftpd_file_transfer_speed})$'}
+    add_field => {
+      "module" => "Vsftp_pic"
+      "recordtimestampftp" => "%{daterecord} %{timerecord}"
+    }
+    remove_field => "tags"
+  }
+  
+  mutate
+  {
+    remove_field => "message"
+  }
+  date {
+    match => ["recordtimestampftp", "YYYY-MM-dd HHmmss"]
+    target => "recordtimestamp"
+  }
+}
+output {
+# here we'll define destination to which we desire to push processed and transformed log entries
+  if "_grokparsefailure" in [tags] {
+    stdout { codec => rubydebug }
+    # write events that didn't match to a file
+    file { "path" => "/home/ansible/grok_failures.txt" }
+  } else {
+    if "Vsftp_pic" in [module]{
+      stdout { codec => rubydebug }
+	    elasticsearch {
+   	  	hosts => "192.168.2.25:9200"
+		    manage_template => false
+      	# index => "camipctest_%{[camera_serial]}" 
+      	index => "camipctest_camrecord" 
+      	document_type => "camerarecord"
+  	  }
+    }
+  }
+}

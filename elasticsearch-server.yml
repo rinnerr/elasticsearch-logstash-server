@@ -1,0 +1,34 @@
+---
+
+- name: elasticsearch-server
+  hosts: elasticsearch-server
+  remote_user: '{{ user_name }}'
+  become: true
+
+  pre_tasks:
+    - name: Gathering network facts
+      setup:
+        gather_subset: network
+
+    - name: Gathering needed facts
+      setup:
+        gather_subset: min
+        filter: "{{ item }}"
+      with_items:
+        - ansible_hostname
+        - ansible_service_mgr
+        - ansible_distribution
+        - ansible_selinux
+        - ansible_os_family
+        - ansible_apparmor
+        - ansible_kernel
+        - ansible_env
+
+  roles:
+    - install-java
+    - rpm-import
+    - elasticsearch
+    - kibana
+    - logstash
+    - elasticsearch_exporter
+
