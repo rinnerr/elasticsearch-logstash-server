@@ -5,7 +5,7 @@ bind_address:
   "{{ hostvars[inventory_hostname]['ansible_' + bind_interface]['ipv4']['address'] }}"
 
 user_name: ansible
-path_home: /home/ansible/automation/elasticsearch-server
+path_home: /home/ansible/automation/elasticsearch-logstash-server
 path_home_server: /home/ansible
 path_to_packages: /home/ansible/automation/packages
 
