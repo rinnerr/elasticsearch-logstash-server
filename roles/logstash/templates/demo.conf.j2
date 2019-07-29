@@ -3,7 +3,7 @@ input {
 # remember that beats will actually be Wowza access log lines
     beats {
         # The IP address to listen for filebeat connections.
-        host => "localhost"
+        host => "{{ bind_address }}"
 	      port => 5044
     }
 }
@@ -37,7 +37,7 @@ output {
     if "Vsftp_pic" in [module]{
       stdout { codec => rubydebug }
 	    elasticsearch {
-   	  	hosts => "192.168.2.25:9200"
+   	  	hosts => "{{ bind_address }}:9200"
 		    manage_template => false
       	# index => "camipctest_%{[camera_serial]}" 
       	index => "camipctest_camrecord" 
